@@ -70,5 +70,9 @@ Facebook uses `mcrouter` as a client proxy to communicate with `memcached` serve
 Reason is to leave communication complexities out of `memcached` and put it in a proxy, outside of it.
 
 `mcrouter` uses 2 modes of communication: TCP and UDP. Since UDP is connectionless, if it is used for GET requests, it greatly improves the latencies.
-The packet drops in UDP mode is considered as cache-miss. However, client will NOT try to invalidate the cache as it will overwhelm the cache for all the UDP miss.
+The packet drops in UDP mode is considered as cache-miss. However, client will NOT try to invalidate the cache as it will overwhelm the cache for all the UDP miss. All the UPDATE/DELETE operations are still done in TCP mode for reliability.
+
+`mcrouter` also contains [connection pooling](https://github.com/facebook/mcrouter/wiki/Features#connection-pooling) which opens a long, single connection with a memcache server.
+This has great benefits, compared to letting each client open up new connection for each memcache fetch/set request. This greatly benefits the memory usage, which would've been
+consumed by TCP connection otherwise.
 
