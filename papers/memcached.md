@@ -23,3 +23,9 @@ Generally, memcache is used as 2 types:
 1. Query cache: on read, check in cache, if not found, cache from db. On write, delete the cache
 2. Generic cache: Put heavy computations in cache (such as results from machine learning)
 
+### Problem statement
+
+Memcached is distributed as single server binary, with no distributed support (i.e. no server-to-server cordination)
+Hence, facebook needed to develop configuration, aggregation, and routing services to organize memcached instances 
+into a distributed system
+
