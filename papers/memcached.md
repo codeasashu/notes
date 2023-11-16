@@ -73,6 +73,14 @@ Reason is to leave communication complexities out of `memcached` and put it in a
 The packet drops in UDP mode is considered as cache-miss. However, client will NOT try to invalidate the cache as it will overwhelm the cache for all the UDP miss. All the UPDATE/DELETE operations are still done in TCP mode for reliability.
 
 `mcrouter` also contains [connection pooling](https://github.com/facebook/mcrouter/wiki/Features#connection-pooling) which opens a long, single connection with a memcache server.
-This has great benefits, compared to letting each client open up new connection for each memcache fetch/set request. This greatly benefits the memory usage, which would've been
-consumed by TCP connection otherwise.
+This has great benefits, compared to letting each client open up new connection for each memcache fetch/set request. This greatly benefits the memory usage, which would've been consumed by TCP connection otherwise.
 
+### 1.4 Incast congestion control
+
+Memcache uses sliding window mechanism to control the number of concurrent requests that can be sent to the server. If client sends all the requests unchecked, it may overwhelm the server since lot of responses will be generated, causing incast congestion.
+
+In a sliding window mechanism, a window is only allowed to send certain number of requests, based on the size of window. For ex, Let's say the initial window size is 3, and client wants to retrieve memcache keys from 1 to 10. In this case, the client will only send 3 requests to the server (key 1,2,3). Once the successful response of any of them is returned (for eg, response for key1 is returned), the next request (key4) will be sent.
+
+This way, successful responses indicate that the sliding window has more available space for requests, hence grows in size. If responses are not received in a timely manner, it is considered as congestion and the size of window shrinks (as requests are pending to be completed, hence lesser available space for new requests).
+
+If window size is smaller (eg 100), then large number of "queued" requests will exist on server. This means the client will spend more time waiting for requests to be dispatched to the server, thus increasing latency. On the contrary, if the window size is too large (eg. 500), then lot of requests will be simultaneously sent, causing potential incast congestion. Hence facebook uses a balance of between these two extremes (eg 300) to maintain the best ratio of congestion and traffic.
