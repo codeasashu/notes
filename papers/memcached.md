@@ -122,5 +122,6 @@ memcached server, we have 2 options:
     __option 2__: We replicate all 100 keys to both servers. In this case, each server only needs to handle 500K/s requests.
     
     
-We know the latency difference in fetching single key vs multiple keys at memcache server level is a matter of microseconds, the latency of overall 1M request will be very less in option2.
+We know the latency difference in fetching single key vs multiple keys at memcache server level is a matter of microseconds, the latency of overall 1M request will be very less in option2. HOWEVER, with replications, the invalidations have to be sent to all the replicas to maintain consistancy.
+
 
